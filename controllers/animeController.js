@@ -1,5 +1,6 @@
 const express = require("express");
-const anime = express.Router();
+const reviewsController = require("./reviewsController")
+
 const {
   getAllAnimes,
   addNewAnime,
@@ -8,11 +9,14 @@ const {
   updateAnime,
 } = require("../queries/animes");
 
+const anime = express.Router();
+anime.use('/:id/reviews', reviewsController)
+
 // here we use the function we wrote inside of our queries.
 // we have to await it because we dont want this file to move
 // on to the next lines of code without this one finishing,
 //  even though we are already using await in the queries file
-anime.get("/", async (req, res) => {
+anime.get("/", async (_, res) => {
   console.log("GET to /anime");
   const animes = await getAllAnimes();
   res.status(200).json(animes);
@@ -35,11 +39,10 @@ anime.post("/new", async (req, res) => {
 anime.delete("/:id", async (request, response) => {
   console.log("DELETE to /anime/:id");
   try {
-    const anime = await deleteAnime(request.params.id);
-
-    return anime;
+    const deleted = await deleteAnime(request.params.id);
+    response.status(200).json(deleted);
   } catch (error) {
-    return error;
+    response.status(500).json({ error: "server error" });
   }
 });
 
